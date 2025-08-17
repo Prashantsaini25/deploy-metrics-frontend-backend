@@ -9,6 +9,7 @@ import {
   Legend,
 } from 'recharts';
 
+// Use environment variable or fallback URL
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 async function getMetrics() {
@@ -38,8 +39,17 @@ function MetricCard({ data }) {
   );
 }
 
+// Define the shape of each metric object
+const metricShape = PropTypes.shape({
+  timestamp: PropTypes.string.isRequired,
+  cpu_usage_percent: PropTypes.number,
+  latency_ms: PropTypes.number,
+  memory_usage_mb: PropTypes.number,
+  request_count: PropTypes.number,
+});
+
 MetricCard.propTypes = {
-  data: PropTypes.array.isRequired,
+  data: PropTypes.arrayOf(metricShape).isRequired,
 };
 
 function App() {
@@ -49,7 +59,7 @@ function App() {
     const fetchData = async () => {
       try {
         const data = await getMetrics();
-        setMetrics((prev) => [...prev.slice(-9), data]);
+        setMetrics((prev) => [...prev.slice(-9), data]); // Keep last 10 entries
       } catch (error) {
         console.error('Error fetching metrics:', error);
       }
