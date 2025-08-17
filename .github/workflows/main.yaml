@@ -45,6 +45,7 @@ jobs:
     - name: Lint frontend
       run: |
         cd frontend
+        npm install --save-dev @eslint/js
         npx eslint src/
 
     - name: Build & Push Docker images
