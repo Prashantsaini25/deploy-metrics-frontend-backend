@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
+  Legend
 } from 'recharts';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://backend-service.dashboard:8000';
+// Use environment variable or fallback URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const getMetrics = async () => {
   const res = await fetch(`${API_URL}/metrics`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch metrics');
+  }
   return res.json();
 };
 
-function MetricCard({ data }) {
+const MetricCard = ({ data }) => {
   const metricsToShow = ['cpu_usage_percent', 'latency_ms', 'memory_usage_mb', 'request_count'];
 
   return (
@@ -35,10 +38,6 @@ function MetricCard({ data }) {
       ))}
     </div>
   );
-}
-
-MetricCard.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 function App() {
@@ -48,7 +47,7 @@ function App() {
     const fetchData = async () => {
       try {
         const data = await getMetrics();
-        setMetrics((prev) => [...prev.slice(-9), data]);
+        setMetrics(prev => [...prev.slice(-9), data]); // Keep last 10 entries
       } catch (error) {
         console.error('Error fetching metrics:', error);
       }
