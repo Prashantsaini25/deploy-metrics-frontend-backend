@@ -59,33 +59,48 @@ jobs:
     - name: Lint frontend
       working-directory: frontend
       run: |
-        # Install ESLint and Airbnb config
-        npm install eslint eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-react eslint-plugin-react-hooks --save-dev
-        
+        # Install ESLint and Airbnb config dependencies
+        npm install --save-dev \
+          eslint \
+          @babel/core \
+          @babel/eslint-parser \
+          eslint-config-airbnb \
+          eslint-plugin-import \
+          eslint-plugin-jsx-a11y \
+          eslint-plugin-react \
+          eslint-plugin-react-hooks
+
         # Create ESLint config file
         echo '{
-          "extends": "airbnb",
+          "parser": "@babel/eslint-parser",
+          "parserOptions": {
+            "requireConfigFile": false,
+            "babelOptions": {
+              "presets": ["@babel/preset-react"]
+            },
+            "ecmaVersion": 2021,
+            "sourceType": "module",
+            "ecmaFeatures": {
+              "jsx": true
+            }
+          },
           "env": {
             "browser": true,
             "es2021": true
           },
-          "parserOptions": {
-            "ecmaFeatures": {
-              "jsx": true
-            },
-            "ecmaVersion": "latest",
-            "sourceType": "module"
-          },
-          "plugins": [
-            "react"
-          ],
+          "extends": ["airbnb"],
+          "plugins": ["react"],
           "rules": {}
         }' > .eslintrc.json
-        
-        # Run ESLint on src directory
-        npx eslint src --ext .js,.jsx || true
 
-    # ----- Docker build & push -----
+        # Install @babel/preset-react required by babelOptions
+        npm install --save-dev @babel/preset-react
+
+        # Run ESLint on src directory (non-failing)
+        npx eslint src --ext .js,.jsx || true
+      
+
+      # ----- Docker build & push -----
     - name: Build & Push Docker images
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
