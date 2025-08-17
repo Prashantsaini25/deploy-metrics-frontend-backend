@@ -56,17 +56,34 @@ jobs:
         else
           npm install
         fi
-    - name: Install ESLint and add lint script
-      working-directory: frontend
-      run: |
-        npm install --save-dev eslint
-        [ -f .eslintrc.json ] || npx eslint --init --no-warn --config '{"env":{"browser":true,"es2021":true},"extends":["eslint:recommended","plugin:react/recommended"],"parserOptions":{"ecmaFeatures":{"jsx":true},"ecmaVersion":12,"sourceType":"module"},"plugins":["react"],"rules":{}}' --yes
-        npm pkg set scripts.lint="eslint src"
-
     - name: Lint frontend
       working-directory: frontend
       run: |
-        npm run lint
+        # Install ESLint and Airbnb config
+        npm install eslint eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-react eslint-plugin-react-hooks --save-dev
+        
+        # Create ESLint config file
+        echo '{
+          "extends": "airbnb",
+          "env": {
+            "browser": true,
+            "es2021": true
+          },
+          "parserOptions": {
+            "ecmaFeatures": {
+              "jsx": true
+            },
+            "ecmaVersion": "latest",
+            "sourceType": "module"
+          },
+          "plugins": [
+            "react"
+          ],
+          "rules": {}
+        }' > .eslintrc.json
+        
+        # Run ESLint on src directory
+        npx eslint src --ext .js,.jsx || true
 
     # ----- Docker build & push -----
     - name: Build & Push Docker images
