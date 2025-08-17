@@ -101,15 +101,24 @@ jobs:
       
 
       # ----- Docker build & push -----
-    - name: Build & Push Docker images
+    - name: Build & Push Docker images FRONTEND
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         docker build -t $DOCKER_USERNAME/dashboard-backend:latest ./backend
-        docker build -t $DOCKER_USERNAME/dashboard-frontend:latest ./frontend
+        # docker build -t $DOCKER_USERNAME/dashboard-frontend:latest ./frontend
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push $DOCKER_USERNAME/dashboard-backend:latest
+        # docker push $DOCKER_USERNAME/dashboard-frontend:latest
+
+    - name: Build & Push Docker images BACKEND
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker build -t $DOCKER_USERNAME/dashboard-frontend:latest ./frontend
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         docker push $DOCKER_USERNAME/dashboard-frontend:latest
 
     # ----- Kubernetes deploy -----
