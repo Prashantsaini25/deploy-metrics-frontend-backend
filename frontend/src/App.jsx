@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import {
   LineChart,
@@ -25,12 +26,10 @@ function App() {
     try {
       const res = await axios.get('/metrics');
       setMetrics(res.data);
-      setHistory(prev =>
-        [
-          ...prev.slice(-29),
-          { ...res.data, time: new Date().toLocaleTimeString() },
-        ],
-      );
+      setHistory((prev) => [
+        ...prev.slice(-29),
+        { ...res.data, time: new Date().toLocaleTimeString() },
+      ]);
     } catch (e) {
       console.error('Error fetching metrics:', e);
     }
@@ -53,21 +52,21 @@ function App() {
           marginBottom: 32,
         }}
       >
-        <MetricCard label='Uptime (sec)' value={metrics.uptime_seconds} />
-        <MetricCard label='CPU (%)' value={metrics.cpu_percent} />
-        <MetricCard label='Latency (ms)' value={metrics.latency_ms} />
-        <MetricCard label='Requests' value={metrics.request_counter} />
+        <MetricCard label="Uptime (sec)" value={metrics.uptime_seconds} />
+        <MetricCard label="CPU (%)" value={metrics.cpu_percent} />
+        <MetricCard label="Latency (ms)" value={metrics.latency_ms} />
+        <MetricCard label="Requests" value={metrics.request_counter} />
       </div>
       <div style={{ width: '100%', height: 340 }}>
         <ResponsiveContainer>
           <LineChart data={history}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='time' minTickGap={30} />
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" minTickGap={30} />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type='monotone' dataKey='cpu_percent' stroke='#8884d8' />
-            <Line type='monotone' dataKey='latency_ms' stroke='#82ca9d' />
+            <Line type="monotone" dataKey="cpu_percent" stroke="#8884d8" />
+            <Line type="monotone" dataKey="latency_ms" stroke="#82ca9d" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -93,5 +92,10 @@ function MetricCard({ label, value }) {
     </div>
   );
 }
+
+MetricCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
 
 export default App;
