@@ -1,101 +1,67 @@
-import React, { useEffect, useState, useRef } from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
-  CartesianGrid,
-  ResponsiveContainer,
+  Legend
 } from 'recharts';
 
-function App() {
-  const [metrics, setMetrics] = useState({
-    uptime_seconds: 0,
-    cpu_percent: 0,
-    latency_ms: 0,
-    request_counter: 0,
-  });
-  const [history, setHistory] = useState([]);
-  const timerRef = useRef();
+// ✅ API call function (was in api.js)
+const API_URL = process.env.REACT_APP_API_URL || 'http://backend-service.dashboard';
+const getMetrics = async () => {
+  const res = await fetch(`${API_URL}/metrics`);
+  return res.json();
+};
 
-  const fetchMetrics = async () => {
-    try {
-      const res = await axios.get('/metrics');
-      setMetrics(res.data);
-      setHistory((prev) => [
-        ...prev.slice(-29),
-        { ...res.data, time: new Date().toLocaleTimeString() },
-      ]);
-    } catch (e) {
-      console.error('Error fetching metrics:', e);
-    }
-  };
-
-  useEffect(() => {
-    fetchMetrics();
-    timerRef.current = setInterval(fetchMetrics, 10000);
-    return () => clearInterval(timerRef.current);
-  }, []);
+// ✅ MetricCard component (was in MetricCard.js)
+const MetricCard = ({ data }) => {
+  const metricsToShow = ['cpu_usage_percent', 'latency_ms', 'memory_usage_mb', 'request_count'];
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: 24 }}>
-      <h2>Metrics Dashboard</h2>
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          flexWrap: 'wrap',
-          marginBottom: 32,
-        }}
-      >
-        <MetricCard label="Uptime (sec)" value={metrics.uptime_seconds} />
-        <MetricCard label="CPU (%)" value={metrics.cpu_percent} />
-        <MetricCard label="Latency (ms)" value={metrics.latency_ms} />
-        <MetricCard label="Requests" value={metrics.request_counter} />
-      </div>
-      <div style={{ width: '100%', height: 340 }}>
-        <ResponsiveContainer>
-          <LineChart data={history}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" minTickGap={30} />
+    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+      {metricsToShow.map((metric) => (
+        <div key={metric} style={{ margin: 20 }}>
+          <h3>{metric.replace(/_/g, ' ')}</h3>
+          <LineChart width={300} height={200} data={data}>
+            <XAxis dataKey="timestamp" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="cpu_percent" stroke="#8884d8" />
-            <Line type="monotone" dataKey="latency_ms" stroke="#82ca9d" />
+            <Line type="monotone" dataKey={metric} stroke="#8884d8" />
           </LineChart>
-        </ResponsiveContainer>
-      </div>
+        </div>
+      ))}
     </div>
   );
-}
-
-function MetricCard({ label, value }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        minWidth: 160,
-        background: '#f8f9fb',
-        borderRadius: 8,
-        boxShadow: '0 1px 4px #eaeaea',
-        padding: 20,
-        textAlign: 'center',
-      }}
-    >
-      <div style={{ fontSize: 14, color: '#888' }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 600 }}>{value}</div>
-    </div>
-  );
-}
-
-MetricCard.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
+
+// ✅ Main App component (was in App.js)
+function App() {
+  const [metrics, setMetrics] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getMetrics();
+        setMetrics(prev => [...prev.slice(-9), data]); // Keep 10 most recent
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>System Metrics Dashboard</h1>
+      <MetricCard data={metrics} />
+    </div>
+  );
+}
 
 export default App;
