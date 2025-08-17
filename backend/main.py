@@ -6,6 +6,7 @@ app = FastAPI()
 start_time = time.time()
 request_counter = 0
 
+
 @app.get("/metrics")
 def get_metrics():
     global request_counter
