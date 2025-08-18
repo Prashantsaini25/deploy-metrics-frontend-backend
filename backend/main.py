@@ -1,10 +1,18 @@
 from fastapi import FastAPI
-import time
-import random
+from fastapi.middleware.cors import CORSMiddleware
+import time, random
 
 app = FastAPI()
 
 start_time = time.time()
+# Allow frontend origin to access metrics
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for production replace with specific origins like "http://localhost:3000"
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 request_counter = 0
 
 

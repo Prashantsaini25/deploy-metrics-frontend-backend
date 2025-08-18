@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-v1
     services:
       docker:
         image: docker:19.03.12
@@ -101,25 +101,25 @@ jobs:
       
 
       # ----- Docker build & push -----
-    - name: Build & Push Docker images FRONTEND
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        docker build -t $DOCKER_USERNAME/dashboard-backend:latest ./backend
-        # docker build -t $DOCKER_USERNAME/dashboard-frontend:latest ./frontend
-        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        docker push $DOCKER_USERNAME/dashboard-backend:latest
-        # docker push $DOCKER_USERNAME/dashboard-frontend:latest
-
     - name: Build & Push Docker images BACKEND
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker build -t $DOCKER_USERNAME/dashboard-frontend:latest ./frontend
+        docker build -t $DOCKER_USERNAME/dashboard-backend:v1 ./backend
+        # docker build -t $DOCKER_USERNAME/dashboard-frontend:v1 ./frontend
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        docker push $DOCKER_USERNAME/dashboard-frontend:latest
+        docker push $DOCKER_USERNAME/dashboard-backend:v1
+        # docker push $DOCKER_USERNAME/dashboard-frontend:v1
+
+    - name: Build & Push Docker images FRONTEND
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker build -t $DOCKER_USERNAME/dashboard-frontend:v1 ./frontend
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        docker push $DOCKER_USERNAME/dashboard-frontend:v1
 
     # ----- Kubernetes deploy -----
     - name: Set up kubeconfig
